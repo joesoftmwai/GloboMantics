@@ -9,11 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
 import com.joesoft.globomantics.helpers.SampleContent;
 import com.joesoft.globomantics.models.Idea;
+import com.joesoft.globomantics.services.IdeaService;
+import com.joesoft.globomantics.services.ServiceBuilder;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class IdeaDetailFragment extends Fragment {
 
@@ -48,16 +55,35 @@ public class IdeaDetailFragment extends Fragment {
             Activity activity = this.getActivity();
 //            final CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
 
-            mItem = SampleContent.getIdeaById(getArguments().getInt(ARG_ITEM_ID));
+//            mItem = SampleContent.getIdeaById(getArguments().getInt(ARG_ITEM_ID));
 
-            ideaName.setText(mItem.getName());
-            ideaDescription.setText(mItem.getDescription());
-            ideaOwner.setText(mItem.getOwner());
-            ideaStatus.setText(mItem.getStatus());
+//            ideaName.setText(mItem.getName());
+//            ideaDescription.setText(mItem.getDescription());
+//            ideaOwner.setText(mItem.getOwner());
+//            ideaStatus.setText(mItem.getStatus());
 
 //            if (appBarLayout != null) {
 //                appBarLayout.setTitle(mItem.getName());
 //            }
+
+            IdeaService ideaService = ServiceBuilder.buildService(IdeaService.class);
+            final Call<Idea> request = ideaService.getIdea(getArguments().getInt(ARG_ITEM_ID));
+            request.enqueue(new Callback<Idea>() {
+                @Override
+                public void onResponse(Call<Idea> call, Response<Idea> response) {
+                    mItem = response.body();
+
+                    ideaName.setText(mItem.getName());
+                    ideaDescription.setText(mItem.getDescription());
+                    ideaOwner.setText(mItem.getOwner());
+                    ideaStatus.setText(mItem.getStatus());
+                }
+
+                @Override
+                public void onFailure(Call<Idea> call, Throwable t) {
+                    Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         updateIdea.setOnClickListener(new View.OnClickListener() {
