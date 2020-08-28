@@ -43,7 +43,7 @@ public class IdeaDetailFragment extends Fragment {
 
         final Context context = getContext();
 
-        Button updateIdea = (Button) rootView.findViewById(R.id.idea_update);
+        final Button updateIdea = (Button) rootView.findViewById(R.id.idea_update);
         Button deleteIdea = (Button) rootView.findViewById(R.id.idea_delete);
 
         final EditText ideaName = (EditText) rootView.findViewById(R.id.idea_name);
@@ -75,8 +75,8 @@ public class IdeaDetailFragment extends Fragment {
 
                     ideaName.setText(mItem.getName());
                     ideaDescription.setText(mItem.getDescription());
-                    ideaOwner.setText(mItem.getOwner());
                     ideaStatus.setText(mItem.getStatus());
+                    ideaOwner.setText(mItem.getOwner());
                 }
 
                 @Override
@@ -89,25 +89,67 @@ public class IdeaDetailFragment extends Fragment {
         updateIdea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Idea newIdea = new Idea();
-                newIdea.setId(getArguments().getInt(ARG_ITEM_ID));
-                newIdea.setName(ideaName.getText().toString());
-                newIdea.setDescription(ideaDescription.getText().toString());
-                newIdea.setStatus(ideaStatus.getText().toString());
-                newIdea.setOwner(ideaOwner.getText().toString());
+//                Idea newIdea = new Idea();
+//                newIdea.setId(getArguments().getInt(ARG_ITEM_ID));
+//                newIdea.setName(ideaName.getText().toString());
+//                newIdea.setDescription(ideaDescription.getText().toString());
+//                newIdea.setStatus(ideaStatus.getText().toString());
+//                newIdea.setOwner(ideaOwner.getText().toString());
 
-                SampleContent.updateIdea(newIdea);
-                Intent intent = new Intent(getContext(), IdeaListActivity.class);
-                startActivity(intent);
+//                SampleContent.updateIdea(newIdea);
+//                Intent intent = new Intent(getContext(), IdeaListActivity.class);
+//                startActivity(intent);
+
+                IdeaService ideaService = ServiceBuilder.buildService(IdeaService.class);
+                Call<Idea> updateRequest = ideaService.updateIdea(
+                        getArguments().getInt(ARG_ITEM_ID),
+                        ideaName.getText().toString(),
+                        ideaDescription.getText().toString(),
+                        ideaStatus.getText().toString(),
+                        ideaOwner.getText().toString()
+
+                );
+
+                updateRequest.enqueue(new Callback<Idea>() {
+                    @Override
+                    public void onResponse(Call<Idea> call, Response<Idea> response) {
+                        Intent intent = new Intent(getContext(), IdeaListActivity.class);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onFailure(Call<Idea> call, Throwable t) {
+                        Toast.makeText(getContext(), "Failed to update Idea; " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
         deleteIdea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SampleContent.deleteIdea(getArguments().getInt(ARG_ITEM_ID));
-                Intent intent = new Intent(getContext(), IdeaListActivity.class);
-                startActivity(intent);
+//                SampleContent.deleteIdea(getArguments().getInt(ARG_ITEM_ID));
+//                Intent intent = new Intent(getContext(), IdeaListActivity.class);
+//                startActivity(intent);
+
+                IdeaService ideaService = ServiceBuilder.buildService(IdeaService.class);
+                Call<Void> deleteRequest = ideaService.deleteIdea(getArguments().getInt(ARG_ITEM_ID));
+
+                deleteRequest.enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        Intent intent = new Intent(getContext(), IdeaListActivity.class);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(getContext(), "Failed to delete Idea; " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
             }
         });
 
